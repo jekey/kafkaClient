@@ -331,5 +331,271 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
     zk.synctime.ms 	2000
     	zk的同步时间 
 
-               
+##### consumer的重要配置
+    
+        名称    默认值  描述
+    groupid 	groupid 	consumer的组id，一般一组consumer消费一个topic，这些consumer配置共同的groupid。
+    socket.timeout.ms 	30000
+    	socket超时时间 30秒，为什么这么大？因为kafka写硬盘的，对consumer一点都不着急。
+    socket.buffersize 	64*1024
+    	64k，socket的buffer 大小。
+    fetch.size 	300*1024
+    	每次从broker 获取300k的数据。
+    backoff.increment.ms 	1000
+    	如果从一个broker节点获得了空，那么就等到1秒之后再去pull，而不是取不到还一直取，直到取到。
+    queuedchunks.max 	100
+    	consumer开100个blocking queue用于缓存从server获得的消息。
+    autocommit.enable 	true
+    	consumer自动的把消费的offset commit到zk中。
+    autocommit.interval.ms 	10000
+    	consumer每10秒把消费的offset commit到zk中。
+    autooffset.reset 	smallest 	重置server的offset为最小 largest为重置为最大，其他值会导致抛异常。
+    consumer.timeout.ms 	-1 	-1的意思就是consumer或得不到数据的话就一直阻塞，如果是一个特定的值，那么超过那么多秒就抛出异常。
+    rebalance.retries.max 	4
+    	rebalance的最大次数，尚不得知超过了这个次数是不balance了还是抛异常。个人觉得是就不balance了，爱咋咋地了。 
+        
+##### producer的重要配置
+
+    名称    默认值  说明
+    serializer.class 	kafka.serializer.DefaultEncoder 	实现kafka.serializer.Encoder<T>的一个类的类名，把T适配成kafka的Message。
+    partitioner.class 	kafka.producer.DefaultPartitioner<T>也就是hash(key)%num_partitions 	分区算法，null的话就是随机取，可以实现kafka.producer.Partitioner<K>接口来自定义。
+    producer.type 	sync 	生产者模式，同步或者异步async
+    broker.list 	null
+    	如果不使用zk来管理，这里配置直连的ip+port
+    zk.connect 	null
+    	使用zk管理的话，这里配置zk地址。
+    buffer.size 	102400
+    	socket buffer size 100k
+    connect.timeout.ms 	5000
+    	连接超时时间 5秒
+    socket.timeout.ms 	30000
+    	socket超时时间30秒
+    reconnect.interval 	30000
+    	重连时间 30秒
+    max.message.size 	1000000 	message的payload最大值1000000字节。
+    compression.codec 	0
+    	压缩算法0不压缩1gzip压缩2Snappy，一般选择gzip，但是使用Snappy压缩效率更高。
+    compressed.topics 	null
+    	对topic分别设置压缩算法
+    zk.read.num.retries 	3
+    	zk刷新缓存的重试次数
+        
+##### 下面是异步的producer的重要配置
+
+        名称    默认值  配置
+    queue.time 	5000 	异步队列缓冲数据的时间5秒
+    queue.size 	10000 	异步队列的大小10k
+    batch.size 	200
+    	批量大小200条
+    event.handler 	kafka.producer.async.EventHandler<T> 	事件处理器
+    event.handler.props 	null
+    	事件处理器属性
+    callback.handler 	null
+    	回调处理器
+    callback.handler.props 	null
+    	回调处理器属性
+        
+
+#### 对kafka的运维和监控
+
+硬件方面
+
+linkedin表示kafka对cpu的要求比较低，尤其是使用GZIP压缩算法的时候，对cpu的要求更低。
+
+对内存的要求也不高，内存的使用大多用于对热log的缓存上。
+
+由于kafka是写硬盘的，所以硬盘的读写速度直接关系着kafka的性能，硬盘的读写越快越好，硬盘的容量越大越好。
+
+对于硬盘需要有硬盘容量的监控。
+操作系统方面
+
+linkedin 表示最好对操作系统做如下优化：
+
+1，增加操作系统文件描述符的数量。因为kafka是要读写log文件的，那么当然文件描述符越多就可以操作越多的log了，这样kafka的性能会好一些。
+
+先看一下 文件描述符的值：
+
+    [root@localhost opt]# ulimit -n
+    1024
+
+意思就是这台机器上的每个进程最多可以同时打开1024个文件。
+
+调整这个数值，把这个数调整到最大：
+
+    [root@localhost opt]# ulimit -HSn 65536
+    [root@localhost opt]# ulimit -n
+    65536
+
+2，增加max socket buffer size数值，以获得更高的性能。
+
+    cat /proc/sys/net/ipv4/tcp_moderate_rcvbuf
+    1
+
+说明max socket buffer size是默认的4MB
+
+验证一下：
+
+    [root@localhost opt]# cat /proc/sys/net/ipv4/tcp_rmem
+    4096    87380   2867200
+    [root@localhost opt]# cat /proc/sys/net/ipv4/tcp_wmem
+    4096    16384   2867200
+
+那么通过设置这些值来增加buffer size，目前尚不得知linkedin设置的多少，推荐的设置为：
+
+    echo 1 > /proc/sys/net/ipv4/tcp_moderate_rcvbuf
+           echo 108544 > /proc/sys/net/core/wmem_max
+           echo 108544 > /proc/sys/net/core/rmem_max
+           echo "4096 87380 4194304" > /proc/sys/net/ipv4/tcp_rmem
+           echo "4096 16384 4194304" > /proc/sys/net/ipv4/tcp_wmem
+
+java虚拟机
+
+首先看一下java的版本：
+
+    [root@localhost opt]# java -version
+    java version "1.6.0_38-ea"
+    Java(TM) SE Runtime Environment (build 1.6.0_38-ea-b04)
+    Java HotSpot(TM) Client VM (build 20.13-b02, mixed mode, sharing)
+
+linkedin推荐使用jdk1.6 并且推荐的程序启动参数为：
+
+    java -server -Xms3072m -Xmx3072m -XX:NewSize=256m -XX:MaxNewSize=256m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=70
+         -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -Xloggc:logs/gc.log -Djava.awt.headless=true
+         -Dcom.sun.management.jmxremote -classpath <long list of jars>
+    
+    kafka
+
+kafka推荐使用最新的版本，因为有更少的bug。
+
+kafka server的最重要的配置就是flush到硬盘的频率，如果过高，那么势必影响性能，如果过低，又不够实时性，所以需要采取一个折中的方案。
+
+kafka提供了timeout 和max message 两种flush机制，就是一种是积累到一定时间flush一次，一种是buffer到了一定数量flush一次。
+
+对于客户端最重要的配置为：
+
+    1，压缩算法，默认配置是不压缩，可选的压缩有0不压缩，1Gzip以及2Snappy ，看一般都使用gzip，比较节省cpu，而Snappy则是超级快。会比gzip高出50倍左右，cpu会高出10%多，需要看情况选择。
+    
+    2，produce方式，同步和异步，一般选择异步。
+    
+    3，batch size
+    
+    4，fetch size
+
+下面是linkedin推荐server的配置：
+
+    kafka.log.default.flush.interval.ms=10000
+    kafka.log.file.size=1073741824
+    kafka.log.default.flush.scheduler.interval.ms=2000
+    kafka.log.flush.interval=3000kafka.socket.send.buffer=2097152
+    kafka.socket.receive.buffer=2097152
+    kafka.monitoring.period.secs=30
+    kafka.num.threads=8
+    kafka.log.cleanup.interval.mins=30
+    kafka.log.retention.hours=168
+    kafka.zookeeper.sessiontimeoutms=6000
+    kafka.zookeeper.connection.timeout=2000
+    kafka.num.partitions=1
+
+对于客户端的配置需要根据各自的场景的不同来配置了。
+对kafka状态的监控
+
+linkedin推荐使用JMX对kafka进行监控，下面举例：
+
+比如使用jsonsole的话：以我的测试机为例，remote输入service:jmx:rmi:///jndi/rmi://192.168.118.129:9999/jmxrmi 连上jmx之后就可以看一些kafka的信息了。
+
+kafka
+
+一些重要的变量值为：
+
+    Server Stats
+    
+        bean name: kafka:type=kafka.SocketServerStats
+    
+          def getProduceRequestsPerSecond: Double
+          def getFetchRequestsPerSecond: Double
+          def getAvgProduceRequestMs: Double
+          def getMaxProduceRequestMs: Double
+          def getAvgFetchRequestMs: Double
+          def getMaxFetchRequestMs: Double
+          def getBytesReadPerSecond: Double
+          def getBytesWrittenPerSecond: Double
+          def getNumFetchRequests: Long
+          def getNumProduceRequests: Long
+          def getTotalBytesRead: Long
+          def getTotalBytesWritten: Long
+          def getTotalFetchRequestMs: Long
+          def getTotalProduceRequestMs: Long
+    
+        bean name: kafka:type=kafka.BrokerAllTopicStat kafka:type=kafka.BrokerAllTopicStat.[topic]
+    
+          def getMessagesIn: Long
+          def getBytesIn: Long
+          def getBytesOut: Long
+          def getFailedProduceRequest: Long
+          def getFailedFetchRequest: Long
+    
+        bean name: kafka:type=kafka.LogFlushStats
+    
+          def getFlushesPerSecond: Double
+          def getAvgFlushMs: Double
+          def getTotalFlushMs: Long
+          def getMaxFlushMs: Double
+          def getNumFlushes: Long
+    
+    Producer stats
+    
+        bean name: kafka:type=kafka.KafkaProducerStats
+    
+          def getProduceRequestsPerSecond: Double
+          def getAvgProduceRequestMs: Double
+          def getMaxProduceRequestMs: Double
+          def getNumProduceRequests: Long
+    
+        bean name: kafka.producer.Producer:type=AsyncProducerStats
+    
+          def getAsyncProducerEvents: Int
+          def getAsyncProducerDroppedEvents: Int
+    
+    Consumer stats
+    
+        bean name: kafka:type=kafka.ConsumerStats
+    
+          def getPartOwnerStats: String
+          def getConsumerGroup: String
+          def getOffsetLag(topic: String, brokerId: Int, partitionId: Int): Long
+          def getConsumedOffset(topic: String, brokerId: Int, partitionId: Int): Long
+          def getLatestOffset(topic: String, brokerId: Int, partitionId: Int): Long
+    
+        bean name: kafka:type=kafka.ConsumerAllTopicStat kafka:type=kafka.ConsumerTopicStat.[topic]
+    
+          def getMessagesPerTopic: Long
+          def getBytesPerTopic: Long
+    
+        bean name: kafka:type=kafka.SimpleConsumerStats
+    
+          def getFetchRequestsPerSecond: Double
+          def getAvgFetchRequestMs: Double
+          def getMaxFetchRequestMs: Double
+          def getNumFetchRequests: Long
+          def getConsumerThroughput: Double
+
+对zookeeper的运维
+
+kafka是依赖zookeeper做管理的，那么一个健康的kafka需要有一个健康的zookeeper来维护。
+
+对于zookeeper的运维，linkedin给了以下建议：
+
+    1，尽量对物理层，网络层，硬件等设施做冗余 。保持电源和网络可用。
+    
+    2，io隔离，对于zookeeper来说，事务日志比程序日志或者日志的快照更好，把程序日志同步然后读取的方式是比较慢的。
+    
+    3，应用程序分开部署。
+    
+    4，小心虚拟化。zookeeper对虚拟化技术支持不是很好，可能会导致一些问题。
+    
+    5，对zookeeper的配置和监控。
+    
+    6，不要建设大型集群，在满足需要的情况下尽可能小和简单。
+    
+    7，尽量建设一个3-5实例的zookeeper集群，这样既可以满足zk的功能，同时集群又足够精简和小巧。
 
