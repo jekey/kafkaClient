@@ -1,4 +1,5 @@
 ####高性能KAFKA 的java 客户端 kafkaClient
+---------------------------
 
 kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性：
 
@@ -25,4 +26,94 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
     1  Intel(R) Core(TM) i7-3520M CPU @ 2.90GHz
     [root@localhost apps_install]# getconf LONG_BIT
     32
+    
+首先，上传刚才下载的压缩包到测试机。
 
+    [root@localhost apps_install]# pwd
+    /opt/apps_install
+    [root@localhost apps_install]# rz -be
+    rz waiting to receive.
+    zmodem trl+C ȡ
+    100%    1557 KB 1557 KB/s 00:00:01       0 Errors-src.tgz...
+    [root@localhost apps_install]# ls
+    kafka-0.7.2-incubating-src.tgz
+    [root@localhost apps_install]# pwd
+    /opt/apps_install
+    
+然后，解压缩这个包。
+
+    [root@localhost apps_install]# ll
+    total 1564
+    drwxr-xr-x. 11  501 games    4096 Sep 28  2012 kafka-0.7.2-incubating-src
+    -rw-r--r--.  1 root root  1595334 Apr 14 20:56 kafka-0.7.2-incubating-src.tgz
+    
+下面开始准备安装，由于kafka是scala语言编写的，scala是基于jvm的语言，所以首先需要确定linux系统中安装了jdk，如果没有安装jdk则需要安装jdk。
+另外由于是在线安装，所以网络需要畅通。
+
+首先是
+
+    [root@localhost kafka-0.7.2-incubating-src]# ./sbt update
+然后是
+
+    [root@localhost kafka-0.7.2-incubating-src]# ./sbt package
+    
+#### kafka 初探
+
+首先看一下kafka目录下都有些啥。
+
+首先kafka的brokers集群是由zookeeper管理的，那么第一步就是启动zookeeper，如果已经有了一个别的zookeeper集群或者项目组有统一的配置管理中心，那么此步骤可以略过。
+
+    [root@localhost bin]# ./zookeeper-server-start.sh ../config/zookeeper.properties &
+    
+这样启动了zookeeper。
+看一下 zookeeper是否正常启动。
+
+    [root@localhost bin]# ps aux | grep zookeeper
+    root     10165  0.0  0.0   5064  1120 pts/1    S    23:25   0:00 /bin/bash ./zookeeper-server-start.sh ../config                /zookeeper.properties
+    root     10167  0.0  0.0   5064  1212 pts/1    S    23:25   0:00 /bin/bash ./kafka-run-class.sh org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10169  0.3  0.6 671624 24780 pts/1    Sl   23:25   0:00 /opt/apps_install/jdk1.6.0_38/bin/java -Xmx512M -server -Dlog4j.configuration=file:./../config/log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp :./../project/boot/scala-2.8.0/lib/scala-compiler.jar:./../project/boot/scala-2.8.0/lib/scala-library.jar:./../core/target/scala_2.8.0/kafka-0.7.2.jar:./../core/lib/*.jar:./../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:./../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:./../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:./../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:./../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:./../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10201  0.0  0.0   4356   732 pts/1    S+   23:27   0:00 grep zookeeper
+    
+正常着，再看看zookeeper的端口。
+
+    [root@localhost bin]# netstat -ntpl| grep 2181
+    tcp        0      0 :::2181                     :::*                        LISTEN      10169/java 
+    
+端口也正常。
+接下来启动kafka的broker
+
+    [root@localhost bin]# ./kafka-server-start.sh ../config/server.properties &
+    
+看看启动是否正常
+
+    [root@localhost bin]# ps aux | grep kafka
+    root     10167  0.0  0.0   5064  1212 pts/1    S    23:25   0:00 /bin/bash ./kafka-run-class.sh org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10169  0.1  0.6 671624 26200 pts/1    Sl   23:25   0:01 /opt/apps_install/jdk1.6.0_38/bin/java -Xmx512M -server -Dlog4j.configuration=file:./../config/log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp :./../project/boot/scala-2.8.0/lib/scala-compiler.jar:./../project/boot/scala-2.8.0/lib/scala-library.jar:./../core/target/scala_2.8.0/kafka-0.7.2.jar:./../core/lib/*.jar:./../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:./../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:./../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:./../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:./../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:./../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10240  0.0  0.0   5064  1148 pts/1    S    23:30   0:00 /bin/bash ./kafka-server-start.sh ../config/server.properties
+    root     10242  0.0  0.0   5064  1220 pts/1    S    23:30   0:00 /bin/bash ./kafka-run-class.sh kafka.Kafka ../config/server.properties
+    root     10244  0.7  1.0 678180 41096 pts/1    Sl   23:30   0:02 /opt/apps_install/jdk1.6.0_38/bin/java -Xmx512M -server -Dlog4j.configuration=file:./../config/log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=9999 -cp :./../project/boot/scala-2.8.0/lib/scala-compiler.jar:./../project/boot/scala-2.8.0/lib/scala-library.jar:./../core/target/scala_2.8.0/kafka-0.7.2.jar:./../core/lib/*.jar:./../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:./../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:./../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:./../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:./../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:./../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar kafka.Kafka ../config/server.properties
+    root     10361  0.0  0.0   4356   732 pts/1    S+   23:35   0:00 grep kafka
+    
+接下来启动一个producer，kafka提供了console版本的kafka producer，可以感受一下。
+
+    [root@localhost bin]# ./kafka-console-producer.sh --zookeeper localhost:2181 --topic guohaozhaotest
+    
+这样我就启动了一个console的producer客户端，使用本地的zookeeper，然后 主题选择的是 guohaozhaotest
+
+接下来再启动一个consumer来消费这个队列，同样是console版本的kafka consumer
+
+    [root@localhost bin]# ./kafka-console-consumer.sh --zookeeper localhost:2181 --topic guohaozhaotest
+    
+既然是对应的consumer和producer，那么自然zookeeper节点和topic名称 是配套的。
+
+下面测试一下，在producer的窗口中输入一些内容：
+
+    foobar
+    hello
+    
+那么过一小会，可以看到consumer的窗口中显示到了：
+
+    foobar
+    hello
+    
+至此，一次简单的kafka尝试到此就完成了，接下来看看如何在程序里面调用kafka的producer和consumer，以用来把kafka当做一个消息队列使用。
