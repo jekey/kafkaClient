@@ -1,6 +1,4 @@
-MyKafka
+分布式消息系统KAFKA
+高性能KAFKA 的java 客户端 kafkaClient
 =======================
 
-### 封装了一个kafka的客户端，可以在互联网应用中方便的使用分布式消息系统 kafka 。
-
-##### 关于kafka的详细介绍，请参考apache官网网站或者linkedin 技术博客。
