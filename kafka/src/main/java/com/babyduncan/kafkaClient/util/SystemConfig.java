@@ -8,10 +8,9 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 /**
- * 系统配置(内部使用)
- * 获取SystemConfig 主要是-D参数传递的KV
+ * 系统锟斤拷锟斤拷(锟节诧拷使锟斤拷)
+ * 锟斤拷取SystemConfig 锟斤拷要锟斤拷-D锟斤拷锟斤拷锟斤拷锟捷碉拷KV
  *
- * @author adyliu (adyliu@sohu-inc.com)
  * @author guohaozhao ( guohaozhao@sohu-inc.com)
  * @since 2011-6-13
  */
