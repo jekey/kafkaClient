@@ -254,4 +254,39 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
             inet6 fe80::20c:29ff:fe74:912d/64 scope link
                valid_lft forever preferred_lft forever
                
+那么我需要修改host为：192.168.118.129
+修改之后，重启一下kafka的server，先stop，再start。
+    
+    ../bin/kafka-server-stop
+    ../bin/kafka-server-start.sh ./server.properties &
+    
+看一下是否正常
+
+    [root@localhost config]# ps aux | grep kafka
+    root     10167  0.0  0.0   5064  1212 pts/1    S    23:25   0:00 /bin/bash ./kafka-run-class.sh org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10169  0.1  0.7 671624 29908 pts/1    Sl   23:25   0:02 /opt/apps_install/jdk1.6.0_38/bin/java -Xmx512M -server -Dlog4j.configuration=file:./../config/log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp :./../project/boot/scala-2.8.0/lib/scala-compiler.jar:./../project/boot/scala-2.8.0/lib/scala-library.jar:./../core/target/scala_2.8.0/kafka-0.7.2.jar:./../core/lib/*.jar:./../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:./../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:./../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:./../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:./../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:./../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar org.apache.zookeeper.server.quorum.QuorumPeerMain ../config/zookeeper.properties
+    root     10819  0.0  0.0   5064  1152 pts/1    S    23:54   0:00 /bin/bash ../bin/kafka-server-start.sh ./server.properties
+    root     10821  0.0  0.0   5064  1224 pts/1    S    23:54   0:00 /bin/bash ../bin/kafka-run-class.sh kafka.Kafka ./server.properties
+    root     10823  1.4  1.0 678240 41596 pts/1    Sl   23:54   0:01 /opt/apps_install/jdk1.6.0_38/bin/java -Xmx512M -server -Dlog4j.configuration=file:../bin/../config/log4j.properties -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=9999 -cp :../bin/../project/boot/scala-2.8.0/lib/scala-compiler.jar:../bin/../project/boot/scala-2.8.0/lib/scala-library.jar:../bin/../core/target/scala_2.8.0/kafka-0.7.2.jar:../bin/../core/lib/*.jar:../bin/../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:../bin/../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:../bin/../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:../bin/../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:../bin/../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:../bin/../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar kafka.Kafka ./server.properties
+    root     10877  0.0  0.0   4356   736 pts/1    S+   23:55   0:00 grep kafka
+
+启动正常。
+
+接下来开始编码前的最后一项准备，引入jar包。
+编写kafka的producer和consumer需要引入一下两个包：
+
+    `./core/target/scala_2.8.0/kafka-0.7.2.jar
+    ./core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar`
+
+这两个包是在kafka 执行 sbt update的时候下载下来的，我把这俩包发布到maven仓库中，这样可以方便打包发布。
+那么在编写kafka应用程序的时候，需要引入一下依赖：
+    
+    <dependency>
+      <groupId>kafka</groupId>
+      <artifactId>kafka</artifactId>
+      <version>0.7.2</version>
+    </dependency>
+    
+
+               
 
