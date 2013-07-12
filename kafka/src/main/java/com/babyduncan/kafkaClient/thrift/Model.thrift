@@ -1,5 +1,4 @@
 ################################################
-# 用于存储在kafka消息系统中                       #
 # author : guohaozhao                          #
 # email  : guohaozhao116008@sohu-inc.com       #
 # since  : 2013-7-11 12:00                     #
