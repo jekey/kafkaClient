@@ -120,122 +120,122 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
 
 #### kafka的配置
 
-            # Licensed to the Apache Software Foundation (ASF) under one or more
-            # contributor license agreements.  See the NOTICE file distributed with
-            # this work for additional information regarding copyright ownership.
-            # The ASF licenses this file to You under the Apache License, Version 2.0
-            # (the "License"); you may not use this file except in compliance with
-            # the License.  You may obtain a copy of the License at
-            #
-            #    http://www.apache.org/licenses/LICENSE-2.0
-            #
-            # Unless required by applicable law or agreed to in writing, software
-            # distributed under the License is distributed on an "AS IS" BASIS,
-            # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-            # See the License for the specific language governing permissions and
-            # limitations under the License.
-            # see kafka.server.KafkaConfig for additional details and defaults
-            
-            ############################# Server Basics #############################
-            
-            # The id of the broker. This must be set to a unique integer for each broker.
-            brokerid=0
-            
-            # Hostname the broker will advertise to consumers. If not set, kafka will use the value returned
-            # from InetAddress.getLocalHost().  If there are multiple interfaces getLocalHost
-            # may not be what you want.
-            #hostname=
-            
-            
-            ############################# Socket Server Settings #############################
-            
-            # The port the socket server listens on
-            port=9092
-            
-            # The number of processor threads the socket server uses for receiving and answering requests.
-            # Defaults to the number of cores on the machine
-            num.threads=8
-            
-            # The send buffer (SO_SNDBUF) used by the socket server
-            socket.send.buffer=1048576
-            
-            # The receive buffer (SO_RCVBUF) used by the socket server
-            socket.receive.buffer=1048576
-            
-            # The maximum size of a request that the socket server will accept (protection against OOM)
-            max.socket.request.bytes=104857600
-            
-            
-            ############################# Log Basics #############################
-            
-            # The directory under which to store log files
-            log.dir=/tmp/kafka-logs
-            
-            # The number of logical partitions per topic per server. More partitions allow greater parallelism
-            # for consumption, but also mean more files.
-            num.partitions=1
-            
-            # Overrides for for the default given by num.partitions on a per-topic basis
-            #topic.partition.count.map=topic1:3, topic2:4
-            
-            ############################# Log Flush Policy #############################
-            
-            # The following configurations control the flush of data to disk. This is the most
-            # important performance knob in kafka.
-            # There are a few important trade-offs here:
-            #    1. Durability: Unflushed data is at greater risk of loss in the event of a crash.
-            #    2. Latency: Data is not made available to consumers until it is flushed (which adds latency).
-            #    3. Throughput: The flush is generally the most expensive operation.
-            # The settings below allow one to configure the flush policy to flush data after a period of time or
-            # every N messages (or both). This can be done globally and overridden on a per-topic basis.
-            
-            # The number of messages to accept before forcing a flush of data to disk
-            log.flush.interval=10000
-            
-            # The maximum amount of time a message can sit in a log before we force a flush
-            log.default.flush.interval.ms=1000
-            
-            # Per-topic overrides for log.default.flush.interval.ms
-            #topic.flush.intervals.ms=topic1:1000, topic2:3000
-            
-            # The interval (in ms) at which logs are checked to see if they need to be flushed to disk.
-            log.default.flush.scheduler.interval.ms=1000
-            
-            ############################# Log Retention Policy #############################
-            
-            # Licensed to the Apache Software Foundation (ASF) under one or more
-            # contributor license agreements.  See the NOTICE file distributed with
-            # this work for additional information regarding copyright ownership.
-            # The ASF licenses this file to You under the Apache License, Version 2.0
-            # (the "License"); you may not use this file except in compliance with
-            # the License.  You may obtain a copy of the License at
-            #
-            #    http://www.apache.org/licenses/LICENSE-2.0
-            #
-            # Unless required by applicable law or agreed to in writing, software
-            # distributed under the License is distributed on an "AS IS" BASIS,
-            # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-            # See the License for the specific language governing permissions and
-            # limitations under the License.
-            # see kafka.server.KafkaConfig for additional details and defaults
-            
-            ############################# Server Basics #############################
-            
-            # The id of the broker. This must be set to a unique integer for each broker.
-            brokerid=0
-            
-            # Hostname the broker will advertise to consumers. If not set, kafka will use the value returned
-            # from InetAddress.getLocalHost().  If there are multiple interfaces getLocalHost
-            # may not be what you want.
-            #hostname=
-            
-            
-            ############################# Socket Server Settings #############################
-            
-            # The port the socket server listens on
-            port=9092
-            
-            # The number of processor threads the socket server uses for receiving and answering requests.
+    # Licensed to the Apache Software Foundation (ASF) under one or more
+    # contributor license agreements.  See the NOTICE file distributed with
+    # this work for additional information regarding copyright ownership.
+    # The ASF licenses this file to You under the Apache License, Version 2.0
+    # (the "License"); you may not use this file except in compliance with
+    # the License.  You may obtain a copy of the License at
+    #
+    #    http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+    # see kafka.server.KafkaConfig for additional details and defaults
+    
+    ############################# Server Basics #############################
+    
+    # The id of the broker. This must be set to a unique integer for each broker.
+    brokerid=0
+    
+    # Hostname the broker will advertise to consumers. If not set, kafka will use the value returned
+    # from InetAddress.getLocalHost().  If there are multiple interfaces getLocalHost
+    # may not be what you want.
+    #hostname=
+    
+    
+    ############################# Socket Server Settings #############################
+    
+    # The port the socket server listens on
+    port=9092
+    
+    # The number of processor threads the socket server uses for receiving and answering requests.
+    # Defaults to the number of cores on the machine
+    num.threads=8
+    
+    # The send buffer (SO_SNDBUF) used by the socket server
+    socket.send.buffer=1048576
+    
+    # The receive buffer (SO_RCVBUF) used by the socket server
+    socket.receive.buffer=1048576
+    
+    # The maximum size of a request that the socket server will accept (protection against OOM)
+    max.socket.request.bytes=104857600
+    
+    
+    ############################# Log Basics #############################
+    
+    # The directory under which to store log files
+    log.dir=/tmp/kafka-logs
+    
+    # The number of logical partitions per topic per server. More partitions allow greater parallelism
+    # for consumption, but also mean more files.
+    num.partitions=1
+    
+    # Overrides for for the default given by num.partitions on a per-topic basis
+    #topic.partition.count.map=topic1:3, topic2:4
+    
+    ############################# Log Flush Policy #############################
+    
+    # The following configurations control the flush of data to disk. This is the most
+    # important performance knob in kafka.
+    # There are a few important trade-offs here:
+    #    1. Durability: Unflushed data is at greater risk of loss in the event of a crash.
+    #    2. Latency: Data is not made available to consumers until it is flushed (which adds latency).
+    #    3. Throughput: The flush is generally the most expensive operation.
+    # The settings below allow one to configure the flush policy to flush data after a period of time or
+    # every N messages (or both). This can be done globally and overridden on a per-topic basis.
+    
+    # The number of messages to accept before forcing a flush of data to disk
+    log.flush.interval=10000
+    
+    # The maximum amount of time a message can sit in a log before we force a flush
+    log.default.flush.interval.ms=1000
+    
+    # Per-topic overrides for log.default.flush.interval.ms
+    #topic.flush.intervals.ms=topic1:1000, topic2:3000
+    
+    # The interval (in ms) at which logs are checked to see if they need to be flushed to disk.
+    log.default.flush.scheduler.interval.ms=1000
+    
+    ############################# Log Retention Policy #############################
+    
+    # Licensed to the Apache Software Foundation (ASF) under one or more
+    # contributor license agreements.  See the NOTICE file distributed with
+    # this work for additional information regarding copyright ownership.
+    # The ASF licenses this file to You under the Apache License, Version 2.0
+    # (the "License"); you may not use this file except in compliance with
+    # the License.  You may obtain a copy of the License at
+    #
+    #    http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+    # see kafka.server.KafkaConfig for additional details and defaults
+    
+    ############################# Server Basics #############################
+    
+    # The id of the broker. This must be set to a unique integer for each broker.
+    brokerid=0
+    
+    # Hostname the broker will advertise to consumers. If not set, kafka will use the value returned
+    # from InetAddress.getLocalHost().  If there are multiple interfaces getLocalHost
+    # may not be what you want.
+    #hostname=
+    
+    
+    ############################# Socket Server Settings #############################
+    
+    # The port the socket server listens on
+    port=9092
+    
+    # The number of processor threads the socket server uses for receiving and answering requests.
             
 需要修改的配置:
 从配置的注解非常明了，那么我们需要改哪些配置呢？
