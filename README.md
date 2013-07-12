@@ -18,9 +18,11 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
 页面上提供了下载地址以及下载密钥，其实最简单的就是直接下载压缩包。
 点击下载，下载kafka-0.7.2-incubating-src.tgz
 上传到安装的机器上，我的测试机是一台安装在thinkpad t430上的centOs虚拟机，配置如下：
+
     [root@localhost apps_install]# uname -a
     Linux localhost 2.6.32-358.el6.i686 #1 SMP Thu Feb 21 21:50:49 UTC 2013 i686 i686 i386 GNU/Linux
     [root@localhost apps_install]# cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c
     1  Intel(R) Core(TM) i7-3520M CPU @ 2.90GHz
     [root@localhost apps_install]# getconf LONG_BIT
     32
+
