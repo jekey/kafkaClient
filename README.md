@@ -287,6 +287,49 @@ kafka是一种高吞吐量的分布式发布订阅消息系统，有如下特性
       <version>0.7.2</version>
     </dependency>
     
+#### kafka的一些重要配置
+
+##### 首先是broker的配置
+
+    名称    默认值  描述
+    brokerid 	none
+    	broker的唯一名字，唯一id，各个broker需要配置不同的int值，一般从0开始配置。
+    enable.zookeeper 	true
+    	是否允许使用zookeeper，kafka可以使用zookeeper也可以ip+port直连，当然使用zk最好。
+    log.flush.interval 	500
+    	message flush到db的条数，500的意思是message没积攒到500条，flush到db一次，然后这500条就可以被consumer消费了。
+    log.default.flush.scheduler.interval.ms 	3000
+    	检查flush的定时任务，3000的意思是每3秒去检查一次，message是否应该被flush到db上。
+    log.default.flush.interval.ms 	log.default.flush.scheduler.interval.ms 	如果有多个log.default.flush.scheduler.interval.ms配置，那么这个是其中最大的那个值。
+    topic.flush.intervals.ms 	none
+    	每一个topic的配置：多长时间把message flush到db。针对某个或者某些topic具体配置，而不使用通用配置。
+    log.retention.hours 	168
+    	日志在db上保存的时间，168小时就是一星期。
+    topic.log.retention.hours 	none
+    	针对每一个topic 配置其log的保留时间，覆盖log.retention.hours。
+    log.retention.size 	-1
+    	当一个log文件超过多大的时候就删除，默认是无限大，也就是硬盘最大容量那么大。
+    log.cleanup.interval.mins 	10
+    	10的意思是每10分钟检查一下是否有一些日志应该被删除了，可能是超过了168小时或者日志的体积大于了最大体积。
+    log.dir 	none 	日志保存的目录。
+    log.file.size 	1024*1024*1024
+    	单个文件的最大体积 1024*1024*1024 就是1G 。
+    max.socket.request.bytes 	104857600 	socket请求的最大字节 104857600就是100M。
+    monitoring.period.secs 	600
+    	每10分钟统计一下性能
+    num.threads 	Runtime.getRuntime().availableProcessors 	broker的线程数，Runtime.getRuntime().availableProcessors的意思就是几核的cpu就开几个线程。
+    num.partitions 	1 	一个topic有几个partition，默认一个topic一个partition，也就是说一个topic默认只能有一个consumer，墙裂建议这个要开大一些。
+    socket.send.buffer 	102400 	socket send buffer的大小
+    socket.receive.buffer 	102400 	socket receive buffer的大小
+    topic.partition.count.map 	none
+    	为每一个topic分别配置partition的个数，比如：topic1:10,topic2:20。
+    zk.connect 	localhost:2182/kafka 	kafka 的zk连接
+    zk.connectiontimeout.ms 	6000
+    	zk的connection超时时间
+    zk.sessiontimeout.ms 	6000
+    	zk的session的超时时间
+    zk.synctime.ms 	2000
+    	zk的同步时间 
 
                
 
